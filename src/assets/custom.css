@@ -1,0 +1,14 @@
+/*custom styles*/
+
+.option-hover {
+    @apply hover:bg-gray-200;
+    @apply cursor-pointer;
+}
+
+.option-selected {
+    @apply bg-yellow-500;
+}
+
+.option-default {
+    @apply bg-white;
+}

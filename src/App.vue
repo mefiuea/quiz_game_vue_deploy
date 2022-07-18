@@ -1,22 +1,77 @@
 <template>
-  <div>
-    <p>Test</p>
-    <button @click="fetchData">Pobierz dane</button>
-    <div>
-      <p>Questions:</p>
-      <p>{{ questions }}</p>
+  <div class="antialiased text-gray-700 bg-gray-100">
+    <div class="flex justify-center">
+      <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-full" @click="fetchData">
+        Pobierz dane
+      </button>
+    </div>
+    <div class="container mx-auto">
+      <div class="flex justify-center">
+        <p>Questions:</p>
+        <p class="">{{ questions }}</p>
+      </div>
+    </div>
+    <div class="flex w-full h-screen justify-center items-center">
+      <div class="w-full max-w-xl">
+        <h1 class="font-bold text-5xl text-center text-indigo-700">Quiz game</h1>
+        <!--        question and answer container-->
+        <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8">
+          <p v-if="questions.length > 0" class="text-2xl font-bold">{{ questions[0]['question'] }}</p>
+          <div
+              v-for="answer in questions[0]['choices']"
+              class="block mt-4 border border-gray-300 rounded-lg py-2 px-6 text-lg answer-option"
+              v-bind:key="answer"
+              v-on:click="selectedAnswerFunction($event)"
+              v-on:mouseover="hoverClassOn($event)"
+              v-on:mouseout="hoverClassOff($event)"
+          >
+            {{ answer }}
+          </div>
+
+          <div class="mt-8 text-center">
+            <div class="h-1 w-12 bg-gray-800 rounded-full mx-auto">
+              <p>2/10</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import './assets/tailwind.css';
 
 export default {
   name: "App",
   data() {
     return {
-      questions: []
+      isHovering: false,
+      answerSelected: false,
+      answerSelected2: false,
+      selectedAnswer: '',
+      questions: [
+        {
+          question: 'question 1 bla bla',
+          choices: {a: 'plecak', b: 'torba', c: 'Zegarek', d: 'monitor'},
+          correctAnswer: 'b',
+        },
+        {
+          question: 'question 2 test test',
+          choices: {a: 'option 1', b: 'option 2', c: 'option 3', d: 'option 4'},
+          correctAnswer: 'a',
+        },
+        {
+          question: 'question 3 gdffgdgdf',
+          choices: {a: 'option 1', b: 'option 2', c: 'option 3', d: 'option 4'},
+          correctAnswer: 'd',
+        },
+      ],
+      currentQuestion: {
+        question: '',
+        answer: 1,
+        choices: []
+      },
+      questionCounter: 0
     }
   },
   methods: {
@@ -35,7 +90,32 @@ export default {
           .catch((error) => {
             return console.log('Error: ', error.message)
           })
-    }
+    },
+    selectedAnswerFunction(event) {
+      // value of selected answer
+      this.selectedAnswer = event.target.innerText;
+      console.log(this.selectedAnswer = event.target.innerText)
+
+      // Changing class of the selected answer - the rest of answers get default class
+      // collect all div elements with answers
+      let allDivElements = Array.from(document.getElementsByClassName('answer-option'))
+      allDivElements.forEach(function (cls) {
+        cls.classList.remove('option-selected')
+        cls.classList.add('option-default')
+      })
+      event.target.classList.remove('option-default');
+      event.target.classList.add('option-selected');
+    },
+    hoverClassOn(event) {
+      this.isHovering = true
+      // console.log('hover on: ', this.isHovering)
+      event.target.classList.add('option-hover')
+    },
+    hoverClassOff(event) {
+      this.isHovering = false
+      // console.log('hover off: ', this.isHovering)
+      event.target.classList.remove('option-hover')
+    },
   },
 }
 </script>
