@@ -16,9 +16,9 @@
         <h1 class="font-bold text-5xl text-center text-indigo-700">Quiz game</h1>
         <!--        question and answer container-->
         <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8">
-          <p v-if="questions.length > 0" class="text-2xl font-bold">{{ questions[0]['question'] }}</p>
+          <p v-if="questions.length > 0" class="text-2xl font-bold">{{ questions[questionIndex]['question'] }}</p>
           <div
-              v-for="answer in questions[0]['choices']"
+              v-for="answer in questions[questionIndex]['choices']"
               class="block mt-4 border border-gray-300 rounded-lg py-2 px-6 text-lg answer-option"
               v-bind:key="answer"
               v-on:click="selectedAnswerFunction($event)"
@@ -27,11 +27,31 @@
           >
             {{ answer }}
           </div>
-
+          <!--progress status-->
           <div class="mt-8 text-center">
             <div class="h-1 w-12 bg-gray-800 rounded-full mx-auto">
               <p>2/10</p>
             </div>
+          </div>
+          <!--next question button-->
+          <div class="mt-6 flow-root">
+            <button
+                class="float-right px-5 py-2 myButton"
+                v-show="questionIndex < questionCounter - 1"
+                :disabled="selectedAnswer === ''"
+                v-on:click="nextQuestion()"
+            >
+              Next &gt;
+            </button>
+            <!--finish quiz button-->
+            <button
+                class="float-right px-5 py-2 myButton"
+                v-show="questionIndex === questionCounter - 1"
+                :disabled="selectedAnswer === ''"
+                v-on:click="showResults()"
+            >
+              Finish
+            </button>
           </div>
         </div>
       </div>
@@ -46,24 +66,24 @@ export default {
   data() {
     return {
       isHovering: false,
-      answerSelected: false,
-      answerSelected2: false,
       selectedAnswer: '',
+      questionIndex: 0,
+      questionCounter: 3,
       questions: [
         {
           question: 'question 1 bla bla',
           choices: {a: 'plecak', b: 'torba', c: 'Zegarek', d: 'monitor'},
-          correctAnswer: 'b',
+          correctAnswer: 'torba',
         },
         {
           question: 'question 2 test test',
           choices: {a: 'option 1', b: 'option 2', c: 'option 3', d: 'option 4'},
-          correctAnswer: 'a',
+          correctAnswer: 'option 1',
         },
         {
           question: 'question 3 gdffgdgdf',
           choices: {a: 'option 1', b: 'option 2', c: 'option 3', d: 'option 4'},
-          correctAnswer: 'd',
+          correctAnswer: 'option 4',
         },
       ],
       currentQuestion: {
@@ -71,7 +91,6 @@ export default {
         answer: 1,
         choices: []
       },
-      questionCounter: 0
     }
   },
   methods: {
@@ -96,13 +115,7 @@ export default {
       this.selectedAnswer = event.target.innerText;
       console.log(this.selectedAnswer = event.target.innerText)
 
-      // Changing class of the selected answer - the rest of answers get default class
-      // collect all div elements with answers
-      let allDivElements = Array.from(document.getElementsByClassName('answer-option'))
-      allDivElements.forEach(function (cls) {
-        cls.classList.remove('option-selected')
-        cls.classList.add('option-default')
-      })
+      this.resetAllClassesToDefault()
       event.target.classList.remove('option-default');
       event.target.classList.add('option-selected');
     },
@@ -115,6 +128,24 @@ export default {
       this.isHovering = false
       // console.log('hover off: ', this.isHovering)
       event.target.classList.remove('option-hover')
+    },
+    nextQuestion() {
+      this.questionIndex++;
+      this.selectedAnswer = '';
+      this.resetAllClassesToDefault();
+    },
+    resetAllClassesToDefault() {
+      // reset all classes to default
+      // Changing class of the selected answer - the rest of answers get default class
+      // collect all div elements with answers
+      let allDivElements = Array.from(document.getElementsByClassName('answer-option'))
+      allDivElements.forEach(function (cls) {
+        cls.classList.remove('option-selected')
+        cls.classList.add('option-default')
+      })
+    },
+    showResults() {
+
     },
   },
 }

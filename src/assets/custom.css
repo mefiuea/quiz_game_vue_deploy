@@ -12,3 +12,22 @@
 .option-default {
     @apply bg-white;
 }
+
+.myButton {
+    border-radius: 10% 90% 10% 90% / 90% 10% 90% 10%;
+    background-image: linear-gradient(45deg, #3023AE 0%, #f09 100%);
+    @apply text-white;
+    @apply font-semibold;
+    @apply border;
+    transition: 0.4s;
+}
+
+.myButton:hover {
+    background-image: linear-gradient(135deg, #3023AE 0%, #f09 100%);
+    @apply border-purple-900;
+    border-radius: 90% 10% 90% 10% / 10% 90% 10% 90%;
+}
+
+.myButton:disabled {
+    background-image: linear-gradient(45deg, rgba(142,142,142,1) 0%, rgba(122,105,140,1) 100%);
+}
