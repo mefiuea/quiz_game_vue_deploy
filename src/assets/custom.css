@@ -5,12 +5,12 @@
     @apply cursor-pointer;
 }
 
-.option-selected {
-    @apply bg-yellow-500;
-}
-
 .option-default {
     @apply bg-white;
+}
+
+.option-selected {
+    @apply bg-yellow-500;
 }
 
 .myButton {

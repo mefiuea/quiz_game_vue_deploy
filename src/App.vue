@@ -1,5 +1,5 @@
 <template>
-  <div class="antialiased text-gray-700 bg-gray-100">
+  <div class="antialiased text-gray-700 bg-gray-100" @click="debug()">
     <div class="flex justify-center">
       <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-full" @click="fetchData">
         Pobierz dane
@@ -16,14 +16,15 @@
         <h1 class="font-bold text-5xl text-center text-indigo-700">Quiz game</h1>
         <!--        question and answer container-->
         <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8">
-          <p v-if="questions.length > 0" class="text-2xl font-bold">{{ questions[questionIndex]['question'] }}</p>
+          <p v-if="questions.length > 0" class="text-2xl font-bold">{{ questions[questionIndex - 1]['question'] }}</p>
           <div
-              v-for="answer in questions[questionIndex]['choices']"
-              class="block mt-4 border border-gray-300 rounded-lg py-2 px-6 text-lg answer-option"
+              v-for="answer in questions[questionIndex-1]['choices']"
+              class="block mt-4 border border-gray-300 rounded-lg py-2 px-6 text-lg option-default answer-option"
               v-bind:key="answer"
               v-on:click="selectedAnswerFunction($event)"
               v-on:mouseover="hoverClassOn($event)"
               v-on:mouseout="hoverClassOff($event)"
+              :class="{'option-selected': selectedAnswersDictionary[questionIndex] === answer}"
           >
             {{ answer }}
           </div>
@@ -37,16 +38,25 @@
           <div class="mt-6 flow-root">
             <button
                 class="float-right px-5 py-2 myButton"
-                v-show="questionIndex < questionCounter - 1"
+                v-show="questionIndex - 1 < questionCounter - 1"
                 :disabled="selectedAnswer === ''"
                 v-on:click="nextQuestion()"
             >
               Next &gt;
             </button>
+            <!--previous question button-->
+            <button
+                class="float-left px-5 py-2 myButton"
+                v-show="questionIndex - 1 >= 0"
+                :disabled="questionIndex - 1 === 0"
+                v-on:click="previousQuestion()"
+            >
+              &lt; Previous
+            </button>
             <!--finish quiz button-->
             <button
                 class="float-right px-5 py-2 myButton"
-                v-show="questionIndex === questionCounter - 1"
+                v-show="questionIndex - 1 === questionCounter - 1"
                 :disabled="selectedAnswer === ''"
                 v-on:click="showResults()"
             >
@@ -67,7 +77,8 @@ export default {
     return {
       isHovering: false,
       selectedAnswer: '',
-      questionIndex: 0,
+      selectedAnswersDictionary: {},
+      questionIndex: 1,
       questionCounter: 3,
       questions: [
         {
@@ -94,6 +105,12 @@ export default {
     }
   },
   methods: {
+    debug() {
+      // console.log('*********************************')
+      // console.log('Debug mode console log')
+      // console.log('Selected answers dictionary: ', this.selectedAnswersDictionary)
+      // console.log('*********************************')
+    },
     fetchData() {
       const apiUrl = 'https://opentdb.com/api.php?amount=10';
 
@@ -114,6 +131,9 @@ export default {
       // value of selected answer
       this.selectedAnswer = event.target.innerText;
       console.log(this.selectedAnswer = event.target.innerText)
+      // add selected answer to dictionary depending on question index
+      this.selectedAnswersDictionary[this.questionIndex] = this.selectedAnswer;
+      console.log(this.selectedAnswersDictionary)
 
       this.resetAllClassesToDefault()
       event.target.classList.remove('option-default');
@@ -134,6 +154,24 @@ export default {
       this.selectedAnswer = '';
       this.resetAllClassesToDefault();
     },
+    previousQuestion() {
+      this.questionIndex--;
+      this.selectedAnswer = '';
+      // check what answer was selected in specific question depending on question index and answered question dictionary
+      // based on this data - update selectedAnswer variable and adding an option-selected class to div element
+      console.log('Actual question number= ', this.questionIndex)
+      this.selectedAnswer = this.selectedAnswersDictionary[this.questionIndex]
+      console.log('selectedAnswerForThisQuestion', this.selectedAnswer)
+      let questions = document.getElementsByClassName('answer-option')
+      let questionsArray = Array.from(questions)
+      questionsArray.forEach(function (question) {
+        console.log('temp():', question)
+      })
+    },
+    showResults() {
+
+    },
+    // static methods
     resetAllClassesToDefault() {
       // reset all classes to default
       // Changing class of the selected answer - the rest of answers get default class
@@ -144,10 +182,9 @@ export default {
         cls.classList.add('option-default')
       })
     },
-    showResults() {
-
-    },
   },
+  beforeMount() {
+  }
 }
 </script>
 
