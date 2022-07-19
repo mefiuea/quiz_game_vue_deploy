@@ -1,5 +1,5 @@
 <template>
-  <div class="antialiased text-gray-700 bg-gray-100" @click="debug()">
+  <div class="antialiased text-gray-700 bg-gray-100">
     <div class="flex justify-center">
       <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-full" @click="fetchData">
         Pobierz dane
@@ -39,7 +39,7 @@
             <button
                 class="float-right px-5 py-2 myButton"
                 v-show="questionIndex - 1 < questionCounter - 1"
-                :disabled="selectedAnswer === ''"
+                :disabled="selectedAnswer === undefined || selectedAnswer === ''"
                 v-on:click="nextQuestion()"
             >
               Next &gt;
@@ -57,7 +57,7 @@
             <button
                 class="float-right px-5 py-2 myButton"
                 v-show="questionIndex - 1 === questionCounter - 1"
-                :disabled="selectedAnswer === ''"
+                :disabled="selectedAnswer === undefined || selectedAnswer === ''"
                 v-on:click="showResults()"
             >
               Finish
@@ -105,11 +105,12 @@ export default {
     }
   },
   methods: {
-    debug() {
-      // console.log('*********************************')
-      // console.log('Debug mode console log')
-      // console.log('Selected answers dictionary: ', this.selectedAnswersDictionary)
-      // console.log('*********************************')
+    info() {
+      console.log('*********************************')
+      console.log('selectedAnswer = ', this.selectedAnswer)
+      console.log('selectedAnswersDictionary = ', this.selectedAnswersDictionary)
+      console.log('questionIndex = ', this.questionIndex)
+      console.log('*********************************')
     },
     fetchData() {
       const apiUrl = 'https://opentdb.com/api.php?amount=10';
@@ -134,10 +135,6 @@ export default {
       // add selected answer to dictionary depending on question index
       this.selectedAnswersDictionary[this.questionIndex] = this.selectedAnswer;
       console.log(this.selectedAnswersDictionary)
-
-      this.resetAllClassesToDefault()
-      event.target.classList.remove('option-default');
-      event.target.classList.add('option-selected');
     },
     hoverClassOn(event) {
       this.isHovering = true
@@ -152,38 +149,29 @@ export default {
     nextQuestion() {
       this.questionIndex++;
       this.selectedAnswer = '';
-      this.resetAllClassesToDefault();
+      this.selectedAnswer = this.selectedAnswersDictionary[this.questionIndex]
+      this.info()
     },
     previousQuestion() {
       this.questionIndex--;
       this.selectedAnswer = '';
       // check what answer was selected in specific question depending on question index and answered question dictionary
-      // based on this data - update selectedAnswer variable and adding an option-selected class to div element
-      console.log('Actual question number= ', this.questionIndex)
+      // based on this data - update selectedAnswer variable
+      // console.log('Actual question number= ', this.questionIndex)
       this.selectedAnswer = this.selectedAnswersDictionary[this.questionIndex]
-      console.log('selectedAnswerForThisQuestion', this.selectedAnswer)
-      let questions = document.getElementsByClassName('answer-option')
-      let questionsArray = Array.from(questions)
-      questionsArray.forEach(function (question) {
-        console.log('temp():', question)
-      })
+      // console.log('selectedAnswerForThisQuestion', this.selectedAnswer)
+      this.info()
     },
     showResults() {
 
     },
-    // static methods
-    resetAllClassesToDefault() {
-      // reset all classes to default
-      // Changing class of the selected answer - the rest of answers get default class
-      // collect all div elements with answers
-      let allDivElements = Array.from(document.getElementsByClassName('answer-option'))
-      allDivElements.forEach(function (cls) {
-        cls.classList.remove('option-selected')
-        cls.classList.add('option-default')
-      })
-    },
   },
   beforeMount() {
+    console.log('*********************************')
+    console.log('selectedAnswer = ', this.selectedAnswer)
+    console.log('selectedAnswersDictionary = ', this.selectedAnswersDictionary)
+    console.log('questionIndex = ', this.questionIndex)
+    console.log('*********************************')
   }
 }
 </script>
