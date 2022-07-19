@@ -30,9 +30,13 @@
           </div>
           <!--progress status-->
           <div class="mt-8 text-center">
-            <div class="h-1 w-12 bg-gray-800 rounded-full mx-auto">
-              <p>2/10</p>
+            <div class="flex justify-center items-center">
+              <span class="text-black text-xs">Saved questions</span>
             </div>
+            <div class="mb-4 w-full h-1 bg-gray-200 rounded-full dark:bg-gray-700">
+              <div class="h-1 bg-yellow-500 font-medium text-blue-100 rounded-full" :style="{width: widthProgress + '%'}"></div>
+            </div>
+            <p>Question: {{ questionIndex }}/{{ questionCounter }}</p>
           </div>
           <!--next question button-->
           <div class="mt-6 flow-root">
@@ -80,6 +84,7 @@ export default {
       selectedAnswersDictionary: {},
       questionIndex: 1,
       questionCounter: 3,
+      widthProgress: 0,
       questions: [
         {
           question: 'question 1 bla bla',
@@ -134,7 +139,9 @@ export default {
       console.log(this.selectedAnswer = event.target.innerText)
       // add selected answer to dictionary depending on question index
       this.selectedAnswersDictionary[this.questionIndex] = this.selectedAnswer;
-      console.log(this.selectedAnswersDictionary)
+      // console.log(this.selectedAnswersDictionary)
+      // update progress bar
+      this.updateProgressBar()
     },
     hoverClassOn(event) {
       this.isHovering = true
@@ -161,10 +168,20 @@ export default {
       this.selectedAnswer = this.selectedAnswersDictionary[this.questionIndex]
       // console.log('selectedAnswerForThisQuestion', this.selectedAnswer)
       this.info()
+      // update progress bar
+      this.updateProgressBar()
     },
     showResults() {
 
     },
+    // static methods
+    updateProgressBar() {
+      // console.log(Object.keys(this.selectedAnswersDictionary).length)
+      // update progress bar
+      this.widthProgress = (Object.keys(this.selectedAnswersDictionary).length / this.questionCounter) * 100
+      // this.widthProgress = (this.questionIndex / this.questionCounter) * 100
+      console.log(this.widthProgress)
+    }
   },
   beforeMount() {
     console.log('*********************************')
