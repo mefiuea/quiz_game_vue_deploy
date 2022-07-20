@@ -19,8 +19,6 @@
   <div class="flex w-full h-screen justify-center items-center" v-if="isStart === true && isFinish === false">
     <div class="w-full max-w-xl">
       <h1 class="font-bold text-5xl text-center text-indigo-700">Quiz game</h1>
-      <!--      <h3 class="font-bold text-5xl text-center text-indigo-700">Timer: {{ timerStart }}</h3>-->
-            <h3 class="font-bold text-5xl text-center text-indigo-700">Timer dictionary: {{ timerQuestionDictionary }}</h3>
       <!--question and answer and results container-->
       <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8">
         <!--display div with questions-->
@@ -141,7 +139,7 @@ export default {
       console.log('*********************************')
     },
     fetchData() {
-      const apiUrl = 'https://opentdb.com/api.php?amount=4';
+      const apiUrl = 'https://opentdb.com/api.php?amount=5';
 
       const request = async () => {
         const response = await fetch(apiUrl);
