@@ -7,9 +7,11 @@
             class="px-2 py-2 myButton"
             style="width: 200px; height: 100px"
             v-on:click="fetchData()"
+            v-if="isLoading === false"
         >
           START
         </button>
+        <div v-if="isLoading === true">loading questions...</div>
       </div>
     </div>
   </div>
@@ -33,9 +35,8 @@
               v-on:mouseover="hoverClassOn($event)"
               v-on:mouseout="hoverClassOff($event)"
               :class="{'option-selected': selectedAnswersDictionary[questionIndex] === answer}"
-          >
-            {{ answer }}
-          </div>
+              v-html="answer"
+          ></div>
           <!--progress status-->
           <div class="mt-8 text-center">
             <div class="flex justify-center items-center">
@@ -91,8 +92,9 @@
         <div class="font-bold text-2xl text-center mb-10">Timer question dictionary: {{ this.timerQuestionDictionary }}</div>
         <div class="mb-16" v-for="(question, idx) in questions" v-bind:key="question">
           <p class="font-bold text-3xl text-center bg-red-200 bg-opacity-50 rounded-full p-2 m-2"
-             v-bind:class="{'bg-green-200 bg-opacity-50 rounded-full p-2 m-2': question.correctAnswer === selectedAnswersDictionary[idx + 1]}">
-            {{ question.question }}</p>
+             v-bind:class="{'bg-green-200 bg-opacity-50 rounded-full p-2 m-2': question.correctAnswer === selectedAnswersDictionary[idx + 1]}"
+             v-html="question.question"
+          ></p>
           <p class="border-yellow-500 border-2 rounded-full p-2 m-2 font-bold">Your answer: <span
               class="font-light text-2xl">{{ selectedAnswersDictionary[idx + 1] }}</span></p>
           <p class="border-green-500 border-2 rounded-full p-2 m-2 font-bold">Correct answer: <span
@@ -128,6 +130,7 @@ export default {
       isStart: false, // variable to check if start button was clicked - after this quiz is starting
       isFinish: false, // variable to check if finish button was clicked - after this results are shown
       questions: [], // array to store dictionaries with questions-answers-correct answer
+      isLoading: false, // change status to true if start button is pressed
     }
   },
   methods: {
@@ -140,6 +143,8 @@ export default {
     },
     fetchData() {
       const apiUrl = 'https://opentdb.com/api.php?amount=5';
+
+      this.isLoading = true
 
       const request = async () => {
         const response = await fetch(apiUrl);
