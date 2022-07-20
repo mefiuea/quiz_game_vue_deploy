@@ -73,7 +73,7 @@
                 class="float-right px-5 py-2 myButton"
                 v-show="questionIndex - 1 === questionCounter - 1"
                 :disabled="selectedAnswer === undefined || selectedAnswer === ''"
-                v-on:click="showResults()"
+                v-on:click="timer(); showResults()"
             >
               Finish
             </button>
@@ -88,8 +88,9 @@
     <div class="w-full max-w-xl">
       <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8 mb-8">
         <div class="font-bold text-5xl text-center mb-10">Results:</div>
-        <div class="font-bold text-2xl text-center mb-10">Correct answers: {{this.correctAnswers }}/{{ this.questionCounter }}
-        </div>
+        <div class="font-bold text-2xl text-center mb-10">Correct answers: {{this.correctAnswers }}/{{ this.questionCounter }}</div>
+        <div class="font-bold text-2xl text-center mb-10">Total time: {{ this.timerGlobalDelta }} [s]</div>
+        <div class="font-bold text-2xl text-center mb-10">Timer question dictionary: {{ this.timerQuestionDictionary }}</div>
         <div class="mb-16" v-for="(question, idx) in questions" v-bind:key="question">
           <p class="font-bold text-3xl text-center bg-red-200 bg-opacity-50 rounded-full p-2 m-2"
              v-bind:class="{'bg-green-200 bg-opacity-50 rounded-full p-2 m-2': question.correctAnswer === selectedAnswersDictionary[idx + 1]}">
@@ -119,8 +120,11 @@ export default {
       widthProgress: 0,  // progress bar width - using in style
       correctAnswers: 0, // counter for correct answers
       wrongAnswers: 0,  // counter for wrong answers
-      timerStart: Date.now(),
-      actualTime: Date.now(),
+      timerGlobalStart: 0,
+      timerGlobalStop: 0,
+      timerGlobalDelta: 0,
+      timerStart: 0,
+      actualTime: 0,
       timerDelta: 0,
       timerQuestionDictionary: {},
       isStart: false,
@@ -170,8 +174,9 @@ export default {
           this.timerQuestionDictionary[i] = 0;
         }
 
-        //start timer
-        this.timerStart = Date.now()
+        //start timers
+        this.timerGlobalStart = Date.now();
+        this.timerStart = Date.now();
       }
 
       request();
@@ -214,11 +219,13 @@ export default {
       // update progress bar
       this.updateProgressBar()
     },
+    // Finish button
     showResults() {
       // this.questionIndex++;
       this.isFinish = true;
       console.log('RESULTS: ')
       this.info();
+      // compare correct answers with answers selected by user
       for (let i = 0; i < this.questions.length; i++) {
         if (this.questions[i].correctAnswer === this.selectedAnswersDictionary[i + 1]) {
           this.correctAnswers++
@@ -228,6 +235,11 @@ export default {
       }
       console.log('Correct answers = ', this.correctAnswers)
       console.log('Wrong answers = ', this.wrongAnswers)
+      // calculate total time
+      // save actual time
+      this.timerGlobalStop = Date.now()
+      // calculate difference between global timer start and stop and convert to seconds
+      this.timerGlobalDelta = Math.floor((this.timerGlobalStop - this.timerGlobalStart) / 1000)
     },
     // static methods
     updateProgressBar() {
@@ -242,11 +254,11 @@ export default {
       this.timerDelta = this.actualTime - this.timerStart
       // save data to dictionary
       // add selected answer to dictionary depending on question index
-      console.log('timer seconds: ', Math.floor(this.timerDelta / 1000))
       this.timerQuestionDictionary[this.questionIndex] += Math.floor(this.timerDelta / 1000)
       // start timer
       this.timerStart = Date.now()
     },
+    // function to randomize word position in correct answers array this.questions.correctAnswer
     shuffle(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
