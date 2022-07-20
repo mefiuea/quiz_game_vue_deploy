@@ -118,16 +118,16 @@ export default {
       widthProgress: 0,  // progress bar width - using in style
       correctAnswers: 0, // counter for correct answers
       wrongAnswers: 0,  // counter for wrong answers
-      timerGlobalStart: 0,
-      timerGlobalStop: 0,
-      timerGlobalDelta: 0,
-      timerStart: 0,
-      actualTime: 0,
-      timerDelta: 0,
-      timerQuestionDictionary: {},
-      isStart: false,
-      isFinish: false,
-      questions: [],
+      timerGlobalStart: 0, // timer to count total time for whole quiz - run right after all data from external api are collected
+      timerGlobalStop: 0, // variable to store time after click finish button
+      timerGlobalDelta: 0, // variable to store time difference between timerGlobalStop and timerGlobalStart
+      timerStart: 0, // variable to store time every time when next or previous button is clicked - used in timer() function
+      actualTime: 0, // variable to store time - corresponding with timerStart variable
+      timerDelta: 0, // variable to store difference between actualTimer and timerStart
+      timerQuestionDictionary: {}, // dictionary to store time for each specific question
+      isStart: false, // variable to check if start button was clicked - after this quiz is starting
+      isFinish: false, // variable to check if finish button was clicked - after this results are shown
+      questions: [], // array to store dictionaries with questions-answers-correct answer
     }
   },
   methods: {
