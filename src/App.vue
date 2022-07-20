@@ -20,12 +20,13 @@
     <div class="w-full max-w-xl">
       <h1 class="font-bold text-5xl text-center text-indigo-700">Quiz game</h1>
       <!--      <h3 class="font-bold text-5xl text-center text-indigo-700">Timer: {{ timerStart }}</h3>-->
-      <!--      <h3 class="font-bold text-5xl text-center text-indigo-700">Timer dictionary: {{ timerQuestionDictionary }}</h3>-->
+            <h3 class="font-bold text-5xl text-center text-indigo-700">Timer dictionary: {{ timerQuestionDictionary }}</h3>
       <!--question and answer and results container-->
       <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8">
         <!--display div with questions-->
         <div v-if="questionIndex-1 < questionCounter">
-          <p v-if="questions.length > 0" class="text-2xl font-bold">{{ questions[questionIndex - 1].question }}</p>
+          <p v-if="questions.length > 0" class="text-2xl font-bold" v-html="questions[questionIndex - 1].question"></p>
+          <!--<p v-if="questions.length > 0" class="text-2xl font-bold">{{ questions[questionIndex - 1].question }}</p>-->
           <div
               v-for="answer in questions[questionIndex-1].choices"
               class="block mt-4 border border-gray-300 rounded-lg py-2 px-6 text-lg option-default answer-option"
@@ -85,11 +86,9 @@
   <!--results view-->
   <div class="flex w-full justify-center items-center" v-if="isStart === true && isFinish === true">
     <div class="w-full max-w-xl">
-      <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8">
+      <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8 mb-8">
         <div class="font-bold text-5xl text-center mb-10">Results:</div>
-        <div class="font-bold text-2xl text-center mb-10">Correct answers: {{
-            this.correctAnswers
-          }}/{{ this.questionCounter }}
+        <div class="font-bold text-2xl text-center mb-10">Correct answers: {{this.correctAnswers }}/{{ this.questionCounter }}
         </div>
         <div class="mb-16" v-for="(question, idx) in questions" v-bind:key="question">
           <p class="font-bold text-3xl text-center bg-red-200 bg-opacity-50 rounded-full p-2 m-2"
@@ -127,8 +126,6 @@ export default {
       isStart: false,
       isFinish: false,
       questions: [],
-      questions2: [],
-      questions3: [],
     }
   },
   methods: {
@@ -140,15 +137,15 @@ export default {
       console.log('*********************************')
     },
     fetchData() {
-      const apiUrl = 'https://opentdb.com/api.php?amount=10';
+      const apiUrl = 'https://opentdb.com/api.php?amount=4';
 
       const request = async () => {
         const response = await fetch(apiUrl);
         console.log(response);
         const data = await response.json();
-        console.log(data.results);
+        console.log('data: ', data.results);
 
-        // copy data from external api to my dictionary
+        // copy data from external api to my dictionary 'questions'
         for (let i = 0; i < data.results.length; i++) {
           const dict = {
             question: data.results[i].question,
@@ -167,6 +164,14 @@ export default {
 
         // allow to generate divs with questions - after all data is download from external api
         this.isStart = true;
+
+        // create timer dictionary and fill with empty numbers
+        for (let i = 1; i < this.questions.length + 1; i++) {
+          this.timerQuestionDictionary[i] = 0;
+        }
+
+        //start timer
+        this.timerStart = Date.now()
       }
 
       request();
