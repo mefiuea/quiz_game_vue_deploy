@@ -7,11 +7,12 @@
             class="px-2 py-2 myButton"
             style="width: 200px; height: 100px"
             v-on:click="fetchData()"
-            v-if="isLoading === false"
+            v-if="isLoading === false && isErrorDuringFetch === false"
         >
           START
         </button>
-        <div v-if="isLoading === true">loading questions...</div>
+        <div v-if="isLoading === true && isErrorDuringFetch === false">loading questions...</div>
+        <div v-if="isLoading === false && isErrorDuringFetch === true">Failed to load questions. Something went wrong.</div>
       </div>
     </div>
   </div>
@@ -87,18 +88,20 @@
     <div class="w-full max-w-xl">
       <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8 mb-8">
         <div class="font-bold text-5xl text-center mb-10">Results:</div>
-        <div class="font-bold text-2xl text-center mb-10">Correct answers: {{this.correctAnswers }}/{{ this.questionCounter }}</div>
+        <div class="font-bold text-2xl text-center mb-10">Correct answers: {{this.correctAnswers }}/{{ this.questionCounter }}
+        </div>
         <div class="font-bold text-2xl text-center mb-10">Total time: {{ this.timerGlobalDelta }} [s]</div>
-        <div class="font-bold text-2xl text-center mb-10">Timer question dictionary: {{ this.timerQuestionDictionary }}</div>
+        <div class="font-bold text-2xl text-center mb-10">Timer question dictionary: {{this.timerQuestionDictionary }}
+        </div>
         <div class="mb-16" v-for="(question, idx) in questions" v-bind:key="question">
           <p class="font-bold text-3xl text-center bg-red-200 bg-opacity-50 rounded-full p-2 m-2"
              v-bind:class="{'bg-green-200 bg-opacity-50 rounded-full p-2 m-2': question.correctAnswer === selectedAnswersDictionary[idx + 1]}"
              v-html="question.question"
           ></p>
           <p class="border-yellow-500 border-2 rounded-full p-2 m-2 font-bold">Your answer: <span
-              class="font-light text-2xl">{{ selectedAnswersDictionary[idx + 1] }}</span></p>
+              class="font-light text-2xl" v-html="selectedAnswersDictionary[idx + 1]"></span></p>
           <p class="border-green-500 border-2 rounded-full p-2 m-2 font-bold">Correct answer: <span
-              class="font-light text-2xl">{{ question.correctAnswer }}</span></p>
+              class="font-light text-2xl" v-html="question.correctAnswer"></span></p>
         </div>
       </div>
     </div>
@@ -112,25 +115,26 @@ export default {
   name: "App",
   data() {
     return {
-      isHovering: false, // variable to indicate if user has hovered the mouse over the answer
+      isHovering: false,  // variable to indicate if user has hovered the mouse over the answer
       selectedAnswer: '',  // variable to store actual selected answer
-      selectedAnswersDictionary: {}, // dictionary to collect all answers from user depending on question number
-      questionIndex: 1, // actual question number
+      selectedAnswersDictionary: {},  // dictionary to collect all answers from user depending on question number
+      questionIndex: 1,  // actual question number
       questionCounter: 0,  // total number of questions
       widthProgress: 0,  // progress bar width - using in style
-      correctAnswers: 0, // counter for correct answers
+      correctAnswers: 0,  // counter for correct answers
       wrongAnswers: 0,  // counter for wrong answers
-      timerGlobalStart: 0, // timer to count total time for whole quiz - run right after all data from external api are collected
-      timerGlobalStop: 0, // variable to store time after click finish button
-      timerGlobalDelta: 0, // variable to store time difference between timerGlobalStop and timerGlobalStart
-      timerStart: 0, // variable to store time every time when next or previous button is clicked - used in timer() function
-      actualTime: 0, // variable to store time - corresponding with timerStart variable
-      timerDelta: 0, // variable to store difference between actualTimer and timerStart
-      timerQuestionDictionary: {}, // dictionary to store time for each specific question
-      isStart: false, // variable to check if start button was clicked - after this quiz is starting
-      isFinish: false, // variable to check if finish button was clicked - after this results are shown
-      questions: [], // array to store dictionaries with questions-answers-correct answer
-      isLoading: false, // change status to true if start button is pressed
+      timerGlobalStart: 0,  // timer to count total time for whole quiz - run right after all data from external api are collected
+      timerGlobalStop: 0,  // variable to store time after click finish button
+      timerGlobalDelta: 0,  // variable to store time difference between timerGlobalStop and timerGlobalStart
+      timerStart: 0,  // variable to store time every time when next or previous button is clicked - used in timer() function
+      actualTime: 0,  // variable to store time - corresponding with timerStart variable
+      timerDelta: 0,  // variable to store difference between actualTimer and timerStart
+      timerQuestionDictionary: {},  // dictionary to store time for each specific question
+      isStart: false,  // variable to check if start button was clicked - after this quiz is starting
+      isFinish: false,  // variable to check if finish button was clicked - after this results are shown
+      questions: [],  // array to store dictionaries with questions-answers-correct answer
+      isLoading: false,  // change status to true if start button is pressed
+      isErrorDuringFetch: false,  // indicates an error - render new view with information
     }
   },
   methods: {
@@ -147,42 +151,55 @@ export default {
       this.isLoading = true
 
       const request = async () => {
-        const response = await fetch(apiUrl);
-        console.log(response);
-        const data = await response.json();
-        console.log('data: ', data.results);
-
-        // copy data from external api to my dictionary 'questions'
-        for (let i = 0; i < data.results.length; i++) {
-          const dict = {
-            question: data.results[i].question,
-            choices: data.results[i].incorrect_answers,
-            correctAnswer: data.results[i].correct_answer,
-          }
-          dict.choices.push(data.results[i].correct_answer)
-          dict.choices = this.shuffle(dict.choices)
-          this.questions.push(dict)
+        try {
+          const response = await fetch(apiUrl).catch(function (error) {
+            console.log('Problems: ', error)
+          });
+          console.log(response);
+          console.log('response status: ', response.status);
+          const data = await response.json();
+          console.log('data: ', data.results);
+          this.prepareQuestions(data);
+        } catch (err) {
+          console.error('MyError: ', err)
+          this.isLoading = false
+          this.isErrorDuringFetch = true
+          throw err
         }
+      }
+      request();
 
-        console.log('questions: ', this.questions)
-
-        // update total number of questions
-        this.questionCounter = this.questions.length;
-
-        // allow to generate divs with questions - after all data is download from external api
-        this.isStart = true;
-
-        // create timer dictionary and fill with empty numbers
-        for (let i = 1; i < this.questions.length + 1; i++) {
-          this.timerQuestionDictionary[i] = 0;
+    },
+    prepareQuestions(data) {
+      // copy data from external api to my dictionary 'questions'
+      for (let i = 0; i < data.results.length; i++) {
+        const dict = {
+          question: data.results[i].question,
+          choices: data.results[i].incorrect_answers,
+          correctAnswer: data.results[i].correct_answer,
         }
-
-        //start timers
-        this.timerGlobalStart = Date.now();
-        this.timerStart = Date.now();
+        dict.choices.push(data.results[i].correct_answer)
+        dict.choices = this.shuffle(dict.choices)
+        this.questions.push(dict)
       }
 
-      request();
+      console.log('questions: ', this.questions)
+
+      // update total number of questions
+      this.questionCounter = this.questions.length;
+
+      // allow to generate divs with questions - after all data is download from external api
+      this.isStart = true;
+
+      // create timer dictionary and fill with empty numbers
+      for (let i = 1; i < this.questions.length + 1; i++) {
+        this.timerQuestionDictionary[i] = 0;
+      }
+
+      //start timers
+      this.timerGlobalStart = Date.now();
+      this.timerStart = Date.now();
+
     },
     selectedAnswerFunction(event) {
       // value of selected answer
