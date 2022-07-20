@@ -1,99 +1,109 @@
 <template>
-  <div class="antialiased text-gray-700 bg-gray-100">
-    <div class="flex justify-center">
-      <button class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-full" @click="fetchData">
-        Pobierz dane
-      </button>
-    </div>
-    <div class="container mx-auto">
-      <div class="flex justify-center">
-        <p>Questions:</p>
-        <p class="">{{ questions }}</p>
+  <!--container with START button-->
+  <div class="flex w-full h-screen justify-center items-center" v-if="isStart === false">
+    <div class="w-full max-w-xl">
+      <div class="flex bg-white p-12 rounded-lg shadow-lg w-full mt-8 justify-center items-center">
+        <button
+            class="px-2 py-2 myButton"
+            style="width: 200px; height: 100px"
+            v-on:click="fetchData()"
+        >
+          START
+        </button>
       </div>
     </div>
-    <div class="flex w-full h-screen justify-center items-center">
-      <div class="w-full max-w-xl">
-        <h1 class="font-bold text-5xl text-center text-indigo-700">Quiz game</h1>
-        <!--        question and answer and results container-->
-        <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8">
-          <!--display div with questions-->
-          <div v-if="questionIndex-1 < questionCounter">
-            <p v-if="questions.length > 0" class="text-2xl font-bold">{{ questions[questionIndex - 1]['question'] }}</p>
-            <div
-                v-for="answer in questions[questionIndex-1]['choices']"
-                class="block mt-4 border border-gray-300 rounded-lg py-2 px-6 text-lg option-default answer-option"
-                v-bind:key="answer"
-                v-on:click="selectedAnswerFunction($event)"
-                v-on:mouseover="hoverClassOn($event)"
-                v-on:mouseout="hoverClassOff($event)"
-                :class="{'option-selected': selectedAnswersDictionary[questionIndex] === answer}"
-            >
-              {{ answer }}
-            </div>
-            <!--progress status-->
-            <div class="mt-8 text-center">
-              <div class="flex justify-center items-center">
-                <span class="text-black text-xs">Saved questions</span>
-              </div>
-              <div class="mb-4 w-full h-1 bg-gray-200 rounded-full dark:bg-gray-700">
-                <div class="h-1 bg-yellow-500 font-medium text-blue-100 rounded-full"
-                     :style="{width: widthProgress + '%'}"></div>
-              </div>
-              <p>Question: {{ questionIndex }}/{{ questionCounter }}</p>
-            </div>
-            <!--next question button-->
-            <div class="mt-6 flow-root">
-              <button
-                  class="float-right px-5 py-2 myButton"
-                  v-show="questionIndex - 1 < questionCounter - 1"
-                  :disabled="selectedAnswer === undefined || selectedAnswer === ''"
-                  v-on:click="nextQuestion()"
-              >
-                Next &gt;
-              </button>
-              <!--previous question button-->
-              <button
-                  class="float-left px-5 py-2 myButton"
-                  v-show="questionIndex - 1 >= 0"
-                  :disabled="questionIndex - 1 === 0"
-                  v-on:click="previousQuestion()"
-              >
-                &lt; Previous
-              </button>
-              <!--finish quiz button-->
-              <button
-                  class="float-right px-5 py-2 myButton"
-                  v-show="questionIndex - 1 === questionCounter - 1"
-                  :disabled="selectedAnswer === undefined || selectedAnswer === ''"
-                  v-on:click="showResults()"
-              >
-                Finish
-              </button>
-            </div>
-          </div>
-          <!--display div with results-->
-          <!--                    <div v-else>-->
-          <br>
-          <hr>
-          <br>
-          <div>
+  </div>
 
-            <div class="font-bold text-5xl text-center mb-10">Results:</div>
-            <div class="font-bold text-2xl text-center mb-10">Correct answers: {{ this.correctAnswers }}/{{ this.questionCounter }}</div>
-            <div class="mb-16" v-for="(question, idx) in questions" v-bind:key="question">
-              <p class="font-bold text-3xl text-center bg-red-200 bg-opacity-50 rounded-full p-2 m-2"
-                 v-bind:class="{'bg-green-200 bg-opacity-50 rounded-full p-2 m-2': question.correctAnswer === selectedAnswersDictionary[idx + 1]}">
-                {{ question.question }}</p>
-              <p class="border-yellow-500 border-2 rounded-full p-2 m-2 font-bold">Your answer: <span
-                  class="font-light text-2xl">{{ selectedAnswersDictionary[idx + 1] }}</span></p>
-              <p class="border-green-500 border-2 rounded-full p-2 m-2 font-bold">Correct answer: <span
-                  class="font-light text-2xl">{{ question.correctAnswer }}</span></p>
+  <!--container with questions-->
+
+  <div class="flex w-full h-screen justify-center items-center" v-if="isStart === true && isFinish === false">
+    <div class="w-full max-w-xl">
+      <h1 class="font-bold text-5xl text-center text-indigo-700">Quiz game</h1>
+      <!--      <h3 class="font-bold text-5xl text-center text-indigo-700">Timer: {{ timerStart }}</h3>-->
+      <!--      <h3 class="font-bold text-5xl text-center text-indigo-700">Timer dictionary: {{ timerQuestionDictionary }}</h3>-->
+      <!--question and answer and results container-->
+      <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8">
+        <!--display div with questions-->
+        <div v-if="questionIndex-1 < questionCounter">
+          <p v-if="questions.length > 0" class="text-2xl font-bold">{{ questions[questionIndex - 1].question }}</p>
+          <div
+              v-for="answer in questions[questionIndex-1].choices"
+              class="block mt-4 border border-gray-300 rounded-lg py-2 px-6 text-lg option-default answer-option"
+              v-bind:key="answer"
+              v-on:click="selectedAnswerFunction($event)"
+              v-on:mouseover="hoverClassOn($event)"
+              v-on:mouseout="hoverClassOff($event)"
+              :class="{'option-selected': selectedAnswersDictionary[questionIndex] === answer}"
+          >
+            {{ answer }}
+          </div>
+          <!--progress status-->
+          <div class="mt-8 text-center">
+            <div class="flex justify-center items-center">
+              <span class="text-black text-xs">Saved questions</span>
             </div>
+            <div class="mb-4 w-full h-1 bg-gray-200 rounded-full dark:bg-gray-700">
+              <div class="h-1 bg-yellow-500 font-medium text-blue-100 rounded-full"
+                   :style="{width: widthProgress + '%'}"></div>
+            </div>
+            <p>Question: {{ questionIndex }}/{{ questionCounter }}</p>
+          </div>
+          <!--next question button-->
+          <div class="mt-6 flow-root">
+            <button
+                class="float-right px-5 py-2 myButton"
+                v-show="questionIndex - 1 < questionCounter - 1"
+                :disabled="selectedAnswer === undefined || selectedAnswer === ''"
+                v-on:click="timer(); nextQuestion()"
+            >
+              Next &gt;
+            </button>
+            <!--previous question button-->
+            <button
+                class="float-left px-5 py-2 myButton"
+                v-show="questionIndex - 1 >= 0"
+                :disabled="questionIndex - 1 === 0"
+                v-on:click="timer(); previousQuestion()"
+            >
+              &lt; Previous
+            </button>
+            <!--finish quiz button-->
+            <button
+                class="float-right px-5 py-2 myButton"
+                v-show="questionIndex - 1 === questionCounter - 1"
+                :disabled="selectedAnswer === undefined || selectedAnswer === ''"
+                v-on:click="showResults()"
+            >
+              Finish
+            </button>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!--results view-->
+  <div class="flex w-full justify-center items-center" v-if="isStart === true && isFinish === true">
+    <div class="w-full max-w-xl">
+      <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8">
+        <div class="font-bold text-5xl text-center mb-10">Results:</div>
+        <div class="font-bold text-2xl text-center mb-10">Correct answers: {{
+            this.correctAnswers
+          }}/{{ this.questionCounter }}
+        </div>
+        <div class="mb-16" v-for="(question, idx) in questions" v-bind:key="question">
+          <p class="font-bold text-3xl text-center bg-red-200 bg-opacity-50 rounded-full p-2 m-2"
+             v-bind:class="{'bg-green-200 bg-opacity-50 rounded-full p-2 m-2': question.correctAnswer === selectedAnswersDictionary[idx + 1]}">
+            {{ question.question }}</p>
+          <p class="border-yellow-500 border-2 rounded-full p-2 m-2 font-bold">Your answer: <span
+              class="font-light text-2xl">{{ selectedAnswersDictionary[idx + 1] }}</span></p>
+          <p class="border-green-500 border-2 rounded-full p-2 m-2 font-bold">Correct answer: <span
+              class="font-light text-2xl">{{ question.correctAnswer }}</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 <script>
@@ -106,32 +116,19 @@ export default {
       selectedAnswer: '',  // variable to store actual selected answer
       selectedAnswersDictionary: {}, // dictionary to collect all answers from user depending on question number
       questionIndex: 1, // actual question number
-      questionCounter: 3,  // total number of questions
+      questionCounter: 0,  // total number of questions
       widthProgress: 0,  // progress bar width - using in style
       correctAnswers: 0, // counter for correct answers
       wrongAnswers: 0,  // counter for wrong answers
-      questions: [
-        {
-          question: 'question 1 bla bla',
-          choices: {a: 'plecak', b: 'torba', c: 'Zegarek', d: 'monitor'},
-          correctAnswer: 'torba',
-        },
-        {
-          question: 'question 2 test test',
-          choices: {a: 'option 1', b: 'option 2', c: 'option 3', d: 'option 4'},
-          correctAnswer: 'option 1',
-        },
-        {
-          question: 'question 3 gdffgdgdf',
-          choices: {a: 'option 1', b: 'option 2', c: 'option 3', d: 'option 4'},
-          correctAnswer: 'option 4',
-        },
-      ],
-      currentQuestion: {
-        question: '',
-        answer: 1,
-        choices: []
-      },
+      timerStart: Date.now(),
+      actualTime: Date.now(),
+      timerDelta: 0,
+      timerQuestionDictionary: {},
+      isStart: false,
+      isFinish: false,
+      questions: [],
+      questions2: [],
+      questions3: [],
     }
   },
   methods: {
@@ -145,18 +142,34 @@ export default {
     fetchData() {
       const apiUrl = 'https://opentdb.com/api.php?amount=10';
 
-      fetch(apiUrl)
-          .then((response) => {
-            console.log('RESPONSE: ', response)
-            return response.json();
-          })
-          .then((data) => {
-            console.log('DATA: ', data)
-            return this.questions = data.results;
-          })
-          .catch((error) => {
-            return console.log('Error: ', error.message)
-          })
+      const request = async () => {
+        const response = await fetch(apiUrl);
+        console.log(response);
+        const data = await response.json();
+        console.log(data.results);
+
+        // copy data from external api to my dictionary
+        for (let i = 0; i < data.results.length; i++) {
+          const dict = {
+            question: data.results[i].question,
+            choices: data.results[i].incorrect_answers,
+            correctAnswer: data.results[i].correct_answer,
+          }
+          dict.choices.push(data.results[i].correct_answer)
+          dict.choices = this.shuffle(dict.choices)
+          this.questions.push(dict)
+        }
+
+        console.log('questions: ', this.questions)
+
+        // update total number of questions
+        this.questionCounter = this.questions.length;
+
+        // allow to generate divs with questions - after all data is download from external api
+        this.isStart = true;
+      }
+
+      request();
     },
     selectedAnswerFunction(event) {
       // value of selected answer
@@ -197,14 +210,14 @@ export default {
       this.updateProgressBar()
     },
     showResults() {
-      this.questionIndex++;
+      // this.questionIndex++;
+      this.isFinish = true;
       console.log('RESULTS: ')
       this.info();
       for (let i = 0; i < this.questions.length; i++) {
-        if (this.questions[i].correctAnswer === this.selectedAnswersDictionary[i+1]) {
+        if (this.questions[i].correctAnswer === this.selectedAnswersDictionary[i + 1]) {
           this.correctAnswers++
-        }
-        else {
+        } else {
           this.wrongAnswers++
         }
       }
@@ -217,7 +230,25 @@ export default {
       // update progress bar
       this.widthProgress = (Object.keys(this.selectedAnswersDictionary).length / this.questionCounter) * 100;
       console.log(this.widthProgress);
-    }
+    },
+    timer() {
+      // timer
+      this.actualTime = Date.now()
+      this.timerDelta = this.actualTime - this.timerStart
+      // save data to dictionary
+      // add selected answer to dictionary depending on question index
+      console.log('timer seconds: ', Math.floor(this.timerDelta / 1000))
+      this.timerQuestionDictionary[this.questionIndex] += Math.floor(this.timerDelta / 1000)
+      // start timer
+      this.timerStart = Date.now()
+    },
+    shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    },
   },
   beforeMount() {
     console.log('*********************************')
