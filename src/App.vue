@@ -89,19 +89,21 @@
     <div class="w-full max-w-xl">
       <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8 mb-8">
         <div class="font-bold text-5xl text-center mb-10">Results:</div>
-        <!--chart-->
+        <!--chart with correct/wrong answers-->
+        <p class="text-center font-bold text-2xl">Correct/wrong answers</p>
         <div class="chart-container">
           <canvas id="myChartQuestionsResults" width="400" height="400"></canvas>
         </div>
-        <div class="font-bold text-2xl text-center mb-10 mt-5">Correct answers: {{
+        <div class="font-bold text-xl text-center mb-10 mt-5">Correct answers: {{
             this.correctAnswers
           }}/{{ this.questionCounter }}
         </div>
-        <div class="font-bold text-2xl text-center mb-10">Total time: {{ this.timerGlobalDelta }} [s]</div>
-        <div class="font-bold text-2xl text-center mb-10">Timer question dictionary: {{
-            this.timerQuestionDictionary
-          }}
+        <!--chart with time spent for answers-->
+        <p class="text-center font-bold text-2xl">Time spent for each question [s]</p>
+        <div class="chart-container">
+          <canvas id="myChartTimeResults" width="400" height="400"></canvas>
         </div>
+        <div class="font-bold text-xl text-center mb-10 mt-5">Total time: {{ this.timerGlobalDelta }} [s]</div>
         <div class="mb-16" v-for="(question, idx) in questions" v-bind:key="question">
           <p class="font-bold text-3xl text-center bg-red-200 bg-opacity-50 rounded-full p-2 m-2"
              v-bind:class="{'bg-green-200 bg-opacity-50 rounded-full p-2 m-2': question.correctAnswer === selectedAnswersDictionary[idx + 1]}"
@@ -145,7 +147,7 @@ export default {
       questions: [],  // array to store dictionaries with questions-answers-correct answer
       isLoading: false,  // change status to true if start button is pressed
       isErrorDuringFetch: false,  // indicates an error - render new view with information
-      startGenerateChart: false,
+      startGenerateChart: false,  // variable indicating when to start generating charts - used in showResults()/updated
     }
   },
   methods: {
@@ -299,7 +301,7 @@ export default {
       }
       return arr;
     },
-    generateChart() {
+    generateQuestionsResultsChart() {
       const ctx = document.getElementById('myChartQuestionsResults');
 
       // chart
@@ -343,6 +345,49 @@ export default {
       myChartQuestionsResults.update();
       console.log('data chart after update', myChartQuestionsResults.data.datasets[0].data)
     },
+    generateTimeResultsChart() {
+      const ctx = document.getElementById('myChartTimeResults');
+
+      // chart
+      const myChartTimeResults = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'correct/incorrect answers',
+            data: [],
+            backgroundColor: [],
+            borderColor: [],
+            borderWidth: 1,
+            hoverOffset: 4,
+          }]
+        },
+        options: {
+          // responsive: true,
+          maintainAspectRatio: false,
+          // aspectRatio: 1
+          layout: {
+            padding: 20
+          }
+        }
+      });
+      // chart
+      myChartTimeResults;
+
+      const randomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+      const randomByte = () => randomNumber(0, 255)
+
+      let dict = this.timerQuestionDictionary;
+
+      Object.keys(dict).forEach(function (key) {
+        myChartTimeResults.data.labels.push(`question ${key}`);  // data
+        myChartTimeResults.data.datasets[0].data.push(dict[key]);  // labels
+        let color = `rgba(${[randomByte(), randomByte(), randomByte(), 0.2].join(',')})`  // set random color
+        myChartTimeResults.data.datasets[0].backgroundColor.push(color);  // push background color to array
+        myChartTimeResults.data.datasets[0].borderColor.push(color);  // push border color to array
+      })
+      myChartTimeResults.update()
+    },
   },
   mounted() {
     console.log('*********************************')
@@ -354,7 +399,8 @@ export default {
   updated: function () {
     this.$nextTick(function () {
       if (this.startGenerateChart === true) {
-        this.generateChart();
+        this.generateQuestionsResultsChart();
+        this.generateTimeResultsChart();
       }
     })
   }
