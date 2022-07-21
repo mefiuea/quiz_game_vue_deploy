@@ -12,7 +12,8 @@
           START
         </button>
         <div v-if="isLoading === true && isErrorDuringFetch === false">loading questions...</div>
-        <div v-if="isLoading === false && isErrorDuringFetch === true">Failed to load questions. Something went wrong.</div>
+        <div v-if="isLoading === false && isErrorDuringFetch === true">Failed to load questions. Something went wrong.
+        </div>
       </div>
     </div>
   </div>
@@ -88,10 +89,18 @@
     <div class="w-full max-w-xl">
       <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8 mb-8">
         <div class="font-bold text-5xl text-center mb-10">Results:</div>
-        <div class="font-bold text-2xl text-center mb-10">Correct answers: {{this.correctAnswers }}/{{ this.questionCounter }}
+        <!--chart-->
+        <div class="chart-container">
+          <canvas id="myChartQuestionsResults" width="400" height="400"></canvas>
+        </div>
+        <div class="font-bold text-2xl text-center mb-10 mt-5">Correct answers: {{
+            this.correctAnswers
+          }}/{{ this.questionCounter }}
         </div>
         <div class="font-bold text-2xl text-center mb-10">Total time: {{ this.timerGlobalDelta }} [s]</div>
-        <div class="font-bold text-2xl text-center mb-10">Timer question dictionary: {{this.timerQuestionDictionary }}
+        <div class="font-bold text-2xl text-center mb-10">Timer question dictionary: {{
+            this.timerQuestionDictionary
+          }}
         </div>
         <div class="mb-16" v-for="(question, idx) in questions" v-bind:key="question">
           <p class="font-bold text-3xl text-center bg-red-200 bg-opacity-50 rounded-full p-2 m-2"
@@ -110,6 +119,7 @@
 </template>
 
 <script>
+import Chart from 'chart.js/auto';
 
 export default {
   name: "App",
@@ -135,6 +145,7 @@ export default {
       questions: [],  // array to store dictionaries with questions-answers-correct answer
       isLoading: false,  // change status to true if start button is pressed
       isErrorDuringFetch: false,  // indicates an error - render new view with information
+      startGenerateChart: false,
     }
   },
   methods: {
@@ -146,7 +157,7 @@ export default {
       console.log('*********************************')
     },
     fetchData() {
-      const apiUrl = 'https://opentdb.com/api.php?amount=5';
+      const apiUrl = 'https://opentdb.com/api.php?amount=10';
 
       this.isLoading = true
 
@@ -260,6 +271,8 @@ export default {
       this.timerGlobalStop = Date.now()
       // calculate difference between global timer start and stop and convert to seconds
       this.timerGlobalDelta = Math.floor((this.timerGlobalStop - this.timerGlobalStart) / 1000)
+
+      this.startGenerateChart = true;
     },
     // static methods
     updateProgressBar() {
@@ -286,13 +299,64 @@ export default {
       }
       return arr;
     },
+    generateChart() {
+      const ctx = document.getElementById('myChartQuestionsResults');
+
+      // chart
+      const myChartQuestionsResults = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Correct answers', 'Wrong answers',],
+          datasets: [{
+            label: 'correct/incorrect answers',
+            data: [],
+            backgroundColor: [
+              'rgba(187, 247, 208, 0.5)',  // correct answers - green
+              'rgba(254, 202, 202, 0.5)',  // wrong answers - red
+            ],
+            borderColor: [
+              'rgba(187, 247, 208, 1)',  // correct answers - green
+              'rgba(254, 202, 202, 1)',  // wrong answers - red
+            ],
+            borderWidth: 1,
+            hoverOffset: 4,
+          }]
+        },
+        options: {
+          // responsive: true,
+          maintainAspectRatio: false,
+          // aspectRatio: 1
+          layout: {
+            padding: 20
+          }
+        }
+      });
+      // chart
+      myChartQuestionsResults;
+
+
+      //  update chart
+      console.log('data chart before push', myChartQuestionsResults.data.datasets[0].data)
+      myChartQuestionsResults.data.datasets[0].data.push(this.correctAnswers)  // correct answers
+      myChartQuestionsResults.data.datasets[0].data.push(this.wrongAnswers)  // wrong answers
+      console.log('data chart after push', myChartQuestionsResults.data.datasets[0].data)
+      myChartQuestionsResults.update();
+      console.log('data chart after update', myChartQuestionsResults.data.datasets[0].data)
+    },
   },
-  beforeMount() {
+  mounted() {
     console.log('*********************************')
     console.log('selectedAnswer = ', this.selectedAnswer)
     console.log('selectedAnswersDictionary = ', this.selectedAnswersDictionary)
     console.log('questionIndex = ', this.questionIndex)
     console.log('*********************************')
+  },
+  updated: function () {
+    this.$nextTick(function () {
+      if (this.startGenerateChart === true) {
+        this.generateChart();
+      }
+    })
   }
 }
 </script>
