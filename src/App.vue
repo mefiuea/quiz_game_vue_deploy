@@ -111,9 +111,7 @@
         <div class="chart-container">
           <canvas id="myChartQuestionsResults" width="400" height="400"></canvas>
         </div>
-        <div class="font-bold text-xl text-center mb-10 mt-5">Correct answers: {{
-            this.correctAnswers
-          }}/{{ this.questionCounter }}
+        <div class="font-bold text-xl text-center mb-10 mt-5">Correct answers: {{this.correctAnswers }}/{{ this.questionCounter }}
         </div>
         <!--chart with time spent for answers-->
         <p class="text-center font-bold text-2xl">Time spent for each question [s]</p>
@@ -121,8 +119,12 @@
           <canvas id="myChartTimeResults" width="400" height="400"></canvas>
         </div>
         <div class="font-bold text-xl text-center mb-10 mt-5">Total time: {{ this.timerGlobalDelta }} [s]</div>
-        <div class="mb-16" v-for="(question, idx) in questions" v-bind:key="question">
-          <p class="font-bold text-3xl text-center bg-red-200 bg-opacity-50 rounded-full p-2 m-2"
+        <!--results - questions-->
+        <div class="mb-16 relative" v-for="(question, idx) in questions" v-bind:key="question">
+          <div class="bg-blue-400 p-1 transform rotate-45 rounded-md h-10 w-10 text-white font-bold text-center absolute right-0 -top-8 shadow-2xl question">
+            <p class="transform -rotate-45">q{{ idx+1 }}</p>
+          </div>
+          <p class="font-bold text-3xl text-center bg-red-200 bg-opacity-50 rounded p-2 m-2"
              v-bind:class="{'bg-green-200 bg-opacity-50 rounded-full p-2 m-2': question.correctAnswer === selectedAnswersDictionary[idx + 1]}"
              v-html="question.question"
           ></p>
@@ -165,7 +167,7 @@ export default {
       isLoading: false,  // change status to true if start button is pressed
       isErrorDuringFetch: false,  // indicates an error - render new view with information
       startGenerateChart: false,  // variable indicating when to start generating charts - used in showResults()/updated
-      selectedNumberOfQuestions: 5,  // variable on first view - allows to choose number of questions
+      selectedNumberOfQuestions: 5,  // variable on first view - allows to choose number of questions - default 5
     }
   },
   methods: {
