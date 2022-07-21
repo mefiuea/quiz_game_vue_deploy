@@ -1,11 +1,12 @@
 <template>
+  <body>
   <!--container with START button-->
   <div class="flex w-full h-screen justify-center items-center" v-if="isStart === false">
-    <div class="w-full max-w-xl">
-      <div class="flex bg-white p-12 rounded-lg shadow-lg w-full mt-8 justify-center items-center">
+    <div class="w-full max-w-xl text-center">
+      <div class="flex-1 bg-white p-12 rounded-lg shadow-lg w-full mt-8 justify-center items-center">
         <button
-            class="px-2 py-2 myButton"
-            style="width: 200px; height: 100px"
+            class="px-2 py-2 myButton align-super"
+            style="width: 200px; height: 100px;"
             v-on:click="fetchData()"
             v-if="isLoading === false && isErrorDuringFetch === false"
         >
@@ -14,15 +15,31 @@
         <div v-if="isLoading === true && isErrorDuringFetch === false">loading questions...</div>
         <div v-if="isLoading === false && isErrorDuringFetch === true">Failed to load questions. Something went wrong.
         </div>
+        <p class="font-bold mt-4 mb-2">Select number of questions</p>
+        <div class="flex justify-center">
+          <div
+              class="text-white font-bold py-2 px-4 rounded m-3 select-number"
+              v-bind:class="{'text-green-400' : selectedNumberOfQuestions === 5}"
+              v-on:click="selectedNumberOfQuestions = 5"
+          >
+            5
+          </div>
+          <div
+              class="text-white font-bold py-2 px-4 rounded m-3 select-number"
+              v-bind:class="{'text-green-400' : selectedNumberOfQuestions === 10}"
+              v-on:click="selectedNumberOfQuestions = 10"
+          >
+            10
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <!--container with questions-->
-
   <div class="flex w-full h-screen justify-center items-center" v-if="isStart === true && isFinish === false">
     <div class="w-full max-w-xl">
-      <h1 class="font-bold text-5xl text-center text-indigo-700">Quiz game</h1>
+      <h1 class="font-bold text-5xl text-center quiz-text">Quiz game</h1>
       <!--question and answer and results container-->
       <div class="bg-white p-12 rounded-lg shadow-lg w-full mt-8">
         <!--display div with questions-->
@@ -36,7 +53,7 @@
               v-on:click="selectedAnswerFunction($event)"
               v-on:mouseover="hoverClassOn($event)"
               v-on:mouseout="hoverClassOff($event)"
-              :class="{'option-selected': selectedAnswersDictionary[questionIndex] === answer}"
+              v-bind:class="{'option-selected': selectedAnswersDictionary[questionIndex] === answer}"
               v-html="answer"
           ></div>
           <!--progress status-->
@@ -117,7 +134,7 @@
       </div>
     </div>
   </div>
-
+  </body>
 </template>
 
 <script>
@@ -148,6 +165,7 @@ export default {
       isLoading: false,  // change status to true if start button is pressed
       isErrorDuringFetch: false,  // indicates an error - render new view with information
       startGenerateChart: false,  // variable indicating when to start generating charts - used in showResults()/updated
+      selectedNumberOfQuestions: 5,  // variable on first view - allows to choose number of questions
     }
   },
   methods: {
@@ -159,7 +177,10 @@ export default {
       console.log('*********************************')
     },
     fetchData() {
-      const apiUrl = 'https://opentdb.com/api.php?amount=10';
+      // creating query string
+      let params = new URLSearchParams();
+      params.append('amount', this.selectedNumberOfQuestions.toString())
+      const apiUrl = 'https://opentdb.com/api.php?' + params.toString();
 
       this.isLoading = true
 
@@ -367,7 +388,7 @@ export default {
           maintainAspectRatio: false,
           // aspectRatio: 1
           layout: {
-            padding: 20
+            padding: 4
           }
         }
       });
